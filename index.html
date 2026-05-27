@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tool Tạo Slug</title>
+
+  <style>
+
+    *{
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      margin:0;
+      padding:30px;
+      background:#f5f5f5;
+    }
+
+    .container{
+      max-width:900px;
+      margin:auto;
+      background:#fff;
+      padding:24px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    h1{
+      text-align:center;
+      margin-top:0;
+      margin-bottom:24px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:180px;
+      padding:16px;
+      border-radius:12px;
+      border:1px solid #ccc;
+      resize:vertical;
+      font-size:15px;
+      line-height:1.6;
+      outline:none;
+    }
+
+    .top-buttons{
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+      margin-bottom:30px;
+    }
+
+    button{
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    .convert-btn{
+      background:#111;
+      color:#fff;
+      padding:12px 18px;
+    }
+
+    .clear-btn{
+      background:#e5e5e5;
+      color:#111;
+      padding:12px 18px;
+    }
+
+    .label{
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    .results{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background:#fafafa;
+      border:1px solid #e3e3e3;
+      border-radius:12px;
+      padding:14px 16px;
+    }
+
+    .slug-text{
+      flex:1;
+      font-size:15px;
+      word-break:break-word;
+    }
+
+    .copy-btn{
+      min-width:72px;
+      height:34px;
+      padding:0 12px;
+      background:#111;
+      color:#fff;
+      border-radius:8px;
+      font-size:13px;
+      transition:0.2s;
+      flex-shrink:0;
+    }
+
+    .copy-btn.copied{
+      background:#22c55e;
+    }
+
+    @media(max-width:768px){
+
+      body{
+        padding:16px;
+      }
+
+      .item{
+        padding:12px;
+      }
+
+      .slug-text{
+        font-size:14px;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Tool Chuyển Chữ Thành Slug</h1>
+
+    <div class="label">
+      Nhập nội dung (mỗi dòng là một kết quả)
+    </div>
+
+    <textarea 
+      id="inputText"
+      placeholder="Ví dụ:
+Áo Đấu DNY SPORT
+Áo Khoác Thể Thao
+Áo Gym Nam"
+    ></textarea>
+
+    <div class="top-buttons">
+      <button class="convert-btn" onclick="convertText()">
+        Chuyển đổi
+      </button>
+
+      <button class="clear-btn" onclick="clearText()">
+        Xóa tất cả
+      </button>
+    </div>
+
+    <div class="label">
+      Kết quả
+    </div>
+
+    <div id="results" class="results"></div>
+
+  </div>
+
+  <script>
+
+    const inputText = document.getElementById("inputText");
+    const results = document.getElementById("results");
+
+    function createSlug(text) {
+
+      return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "d")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+
+    }
+
+    function convertText() {
+
+      results.innerHTML = "";
+
+      const lines = inputText.value
+        .split("\n")
+        .filter(line => line.trim() !== "");
+
+      lines.forEach(line => {
+
+        const slug = createSlug(line);
+
+        const item = document.createElement("div");
+        item.className = "item";
+
+        item.innerHTML = `
+          <div class="slug-text">${slug}</div>
+
+          <button class="copy-btn">
+            Copy
+          </button>
+        `;
+
+        const button = item.querySelector(".copy-btn");
+
+        button.addEventListener("click", () => {
+
+          navigator.clipboard.writeText(slug);
+
+          button.innerText = "Đã copy";
+          button.classList.add("copied");
+
+          setTimeout(() => {
+
+            button.innerText = "Copy";
+            button.classList.remove("copied");
+
+          }, 1500);
+
+        });
+
+        results.appendChild(item);
+
+      });
+
+    }
+
+    function clearText() {
+
+      inputText.value = "";
+      results.innerHTML = "";
+      inputText.focus();
+
+    }
+
+    inputText.addEventListener("input", convertText);
+
+  </script>
+
+</body>
+</html>
